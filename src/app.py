@@ -11,6 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -38,10 +39,23 @@ def get_agent():
 
 app = FastAPI(title="Personal Knowledge Base RAG", version="1.0.0")
 
+# 静态前端（聊天页面）
+STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
+@app.get("/")
+def home():
+    from fastapi.responses import FileResponse
+    index = STATIC_DIR / "index.html"
+    return FileResponse(str(index)) if index.exists() else {"hint": "GET /docs 查看接口"}
+
 
 class AskReq(BaseModel):
     question: str
     k: int = 4
+    structured: bool = False  # 结构化输出（JSON schema）
 
 
 class IndexReq(BaseModel):
@@ -59,7 +73,7 @@ def ask(req: AskReq):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=503,
                             content={"error": "未配置 DEEPSEEK_API_KEY，请在 .env 中填写后重启服务"})
-    a = get_agent().answer(req.question, k=req.k)
+    a = get_agent().answer(req.question, k=req.k, structured=req.structured)
     return {"answer": a.text, "sources": a.sources, "used_tool": a.used_tool}
 
 

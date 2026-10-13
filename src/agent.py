@@ -40,11 +40,27 @@ class RAGAgent:
         self.llm = build_llm(cfg)
         self.llm_with_tools = self.llm.bind_tools(ALL_TOOLS)
 
-    def answer(self, question: str, k: int = 4) -> Answer:
+    def answer(self, question: str, k: int = 4, structured: bool = False) -> Answer:
         # 1. 检索
         docs = self.store.retrieve(question, k=k)
         context = "\n\n".join(f"[{i+1}] {d.page_content}" for i, d in enumerate(docs))
         sources = sorted({d.metadata.get("source", "?").split("\\")[-1].split("/")[-1] for d in docs})
+
+        if structured:
+            # 结构化输出：JSON 模式（response_format=json_object）
+            llm = self.llm.bind(response_format={"type": "json_object"})
+            prompt = (f"【检索到的资料】\n{context}\n\n【用户问题】\n{question}\n\n"
+                      "只输出一个 JSON 对象，不要输出其他内容，格式："
+                      '{"answer": "回答内容", "sources": ["文件名"], "confidence": 0.0~1.0}')
+            resp = llm.invoke(prompt)
+            import json
+            try:
+                data = json.loads(resp.content)
+                return Answer(text=data.get("answer", ""),
+                              sources=data.get("sources", sources),
+                              used_tool=False)
+            except Exception:
+                return Answer(text=resp.content, sources=sources, used_tool=False)
 
         # 2. 首轮：带检索上下文 + 工具
         messages = [

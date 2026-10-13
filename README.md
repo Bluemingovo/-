@@ -1,15 +1,40 @@
 # 基于 LangChain 的个人知识库问答系统
 
-一个**真实可运行**的 RAG（检索增强生成）+ 工具调用（Function Calling）+ REST API 项目。
-用于把「用 AI」升级成「做 AI 应用」：证明你能独立完成大模型接口调用、向量检索、
-函数调用与工程化交付。
+一个**真实可运行**的 RAG（检索增强生成）+ 工具调用（Function Calling）+ REST API 项目，
+覆盖大模型应用开发的核心链路：**接口调用 → 检索增强 → 函数调用 → 结构化输出 → 服务化 → 部署 → 测试**。
+
+## 架构
+
+```
+                 ┌──────────────┐
+ 浏览器(静态前端) │   FastAPI    │
+    GET /        │  /ask        │
+                 │  /index      │
+                 │  /docs       │
+                 └──────┬───────┘
+                        │
+        ┌───────────────┼────────────────┐
+        ▼               ▼                ▼
+   RAG 检索链       函数工具          结构化输出
+  文档切分→向量化   list_docs       response_format
+  →FAISS 检索      search_files     =json_object
+        │               ▲
+        └───────┬───────┘
+                ▼
+         DeepSeek (OpenAI 兼容 API)
+         deepseek-chat + tool_calls
+```
 
 ## 功能
 
 - **RAG 问答**：文档切分 → 向量化 → FAISS 检索 → 带引用回答
 - **工具调用**：本地工具（列出文档 / 搜索文件），模型按需调用
+- **结构化输出**：JSON schema 模式（answer / sources / confidence）
 - **增量索引**：通过文件 mtime 变更检测，只重索引变更文件（降低重复索引率）
 - **REST 接口**：FastAPI 提供 `/ask` `/index` `/docs` `/health`
+- **Web 前端**：零依赖静态聊天页面（浏览器打开 `http://127.0.0.1:8000/` 即可使用）
+- **部署**：Dockerfile + docker-compose 一键启动
+- **测试**：pytest 单元测试（离线可跑，不依赖 API key）+ GitHub Actions CI
 - **评测**：检索命中率 Hit@k、答案正确率、索引效率对比
 
 ## 目录结构
@@ -100,9 +125,30 @@ EMBEDDING_API_KEY=sk-xxxxxxxx
 | 答案正确率 | 100%（5/5，deepseek-chat 实测） |
 | 增量索引 | 变更 1 个文件仅重嵌入 2 个 chunk（全量 4 个），重复索引率降低约 50% |
 | 工具调用 | 文档清单类问题实测触发 list_docs 工具（used_tool=true） |
+| 结构化输出 | JSON schema 模式实测可用（answer/sources/confidence） |
 | REST 接口 | /ask /index /docs /health 实测可用 |
+| 单元测试 | 8 passed（pytest，离线） |
 
 复现：`python -m src.eval --k 4 --with-llm`
+
+## 测试与 CI
+
+```bash
+# 离线单元测试（无需 API key）
+python -m pytest tests -v
+
+# 离线自检
+python -m src.selfcheck
+```
+
+GitHub Actions 在每次 push 时自动运行 pytest（见 `.github/workflows/ci.yml`）。
+
+## Docker 部署
+
+```bash
+docker compose up --build
+# 浏览器打开 http://localhost:8000 使用聊天页面
+```
 
 > 说明：默认哈希嵌入用于离线可复现验证；正式使用建议接入真实 embedding
 > （如 DashScope text-embedding-v3），检索质量会更好。

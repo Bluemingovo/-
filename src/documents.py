@@ -49,11 +49,14 @@ def split_text(text: str, source: str, file_mtime: float,
 
 
 def load_docs_from_dir(docs_dir: Path) -> List[Document]:
-    """加载目录下所有支持的文档并切分。"""
+    """加载目录下所有支持的文档并切分；单个文件解析失败时跳过（容错）。"""
     docs: List[Document] = []
     for p in sorted(docs_dir.rglob("*")):
         if p.is_file() and p.suffix.lower() in SUPPORTED_EXT:
-            text = load_document(p)
-            if text.strip():
-                docs.extend(split_text(text, source=str(p), file_mtime=p.stat().st_mtime))
+            try:
+                text = load_document(p)
+                if text.strip():
+                    docs.extend(split_text(text, source=str(p), file_mtime=p.stat().st_mtime))
+            except Exception as e:  # 损坏/加密文件：跳过不中断整体索引
+                print(f"[warn] 跳过无法解析的文件 {p.name}: {e}")
     return docs
