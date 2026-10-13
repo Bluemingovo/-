@@ -15,8 +15,8 @@
 ## 项目状态
 
 - 仓库：https://github.com/Bluemingovo/Blueming-llm-rag-agent（本地：default-workspace\llm-rag-agent）
-- 已实现：RAG 检索链、工具调用、增量索引、结构化输出、记忆系统（短期+长期）、FastAPI、静态前端、Docker、pytest（13 个）、GitHub Actions CI
-- 真实数字：Hit@4=100%（5 题）、答案正确率 100%（5/5）、增量索引 -50%、13 tests passed
+- 已实现：RAG 检索链、工具调用、增量索引、结构化输出、记忆系统（短期+长期）、GitHub 仓库摄取（ingest_github.py）、LLM 上下文文件（docs/llm-context.md）、FastAPI、静态前端、Docker、pytest（13 个）、GitHub Actions CI
+- 真实数字：Hit@4=100%（5 题）、答案正确率 100%（5/5）、增量索引 -50%、13 tests passed、跨会话记忆召回通过、问仓库内容可正确回答（k=6）
 - 待迭代：真实 Embedding（DashScope）、流式输出、多轮记忆 UI、评测集扩容
 
 ## 用户偏好与约定
