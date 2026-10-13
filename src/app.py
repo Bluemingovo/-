@@ -85,7 +85,7 @@ def ask(req: AskReq):
 
 @app.get("/memory")
 def memory_list():
-    """查看长期记忆。"""
+    """查看运行时长期记忆。"""
     return {"memories": memory.list_all()}
 
 
@@ -94,6 +94,35 @@ def memory_clear():
     """清空长期记忆。"""
     memory.clear()
     return {"status": "cleared"}
+
+
+# ---- 助手记忆（跨 agent 共享记忆：任何 agent 通过 HTTP 拉取） ----
+ASSISTANT_MEMORY_FILE = Path(__file__).resolve().parent.parent / "docs" / "assistant-memory.md"
+LLM_CONTEXT_FILE = Path(__file__).resolve().parent.parent / "docs" / "llm-context.md"
+
+
+@app.get("/assistant-memory")
+def assistant_memory_get():
+    """返回共享记忆（文本）：其他 agent 调这个接口即可拿到最新记忆。"""
+    parts = []
+    if LLM_CONTEXT_FILE.exists():
+        parts.append(LLM_CONTEXT_FILE.read_text(encoding="utf-8"))
+    if ASSISTANT_MEMORY_FILE.exists():
+        parts.append(ASSISTANT_MEMORY_FILE.read_text(encoding="utf-8"))
+    return {"memory": "\n\n".join(parts)}
+
+
+@app.post("/assistant-memory")
+def assistant_memory_update(req: dict):
+    """其他 agent 写入记忆条目：{key, value}，追加到共享记忆文件。"""
+    key = req.get("key", "").strip()
+    value = req.get("value", "").strip()
+    if not key or not value:
+        return {"status": "ignored"}
+    ASSISTANT_MEMORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(ASSISTANT_MEMORY_FILE, "a", encoding="utf-8") as f:
+        f.write(f"\n- {key}: {value}\n")
+    return {"status": "saved", "key": key}
 
 
 @app.post("/index")
