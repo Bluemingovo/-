@@ -13,11 +13,18 @@ from langchain_core.tools import tool
 from .documents import SUPPORTED_EXT
 
 _docs_dir = Path(__file__).resolve().parent.parent / "data" / "docs"
+_memory_store = None  # 由 app 注入（set_memory_store）
 
 
 def set_docs_dir(path: Path) -> None:
     global _docs_dir
     _docs_dir = path
+
+
+def set_memory_store(store) -> None:
+    """把 MemoryStore 注入工具层，供 save_memory 工具写入长期记忆。"""
+    global _memory_store
+    _memory_store = store
 
 
 @tool
@@ -44,4 +51,14 @@ def search_files(keyword: str) -> str:
     return "匹配的文件：" + (", ".join(hits) if hits else "无")
 
 
-ALL_TOOLS = [list_docs, search_files]
+@tool
+def save_memory(key: str, value: str) -> str:
+    """把值得长期记住的事实写入长期记忆（用户偏好、决定、重要信息）。
+    当用户透露了值得长期记住的信息时，主动调用本工具。"""
+    if _memory_store is None:
+        return "记忆库未初始化。"
+    _memory_store.add_memory(key, value, source="agent")
+    return f"已记住：{key}：{value}"
+
+
+ALL_TOOLS = [list_docs, search_files, save_memory]

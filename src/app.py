@@ -29,6 +29,8 @@ embedder = build_embedder(cfg.embedding_backend, model=cfg.embedding_model)
 store = VectorStore(embedder, cfg.vector_dir, cfg.docs_dir)
 set_docs_dir(cfg.docs_dir)
 memory = MemoryStore(cfg.vector_dir.parent / "memory")
+from .tools import set_memory_store
+set_memory_store(memory)
 
 agent = None
 
