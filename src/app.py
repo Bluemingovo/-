@@ -22,11 +22,13 @@ from .embedding import build_embedder
 from .vector_store import VectorStore
 from .agent import RAGAgent
 from .tools import set_docs_dir
+from .memory import MemoryStore
 
 cfg = load_config()
 embedder = build_embedder(cfg.embedding_backend, model=cfg.embedding_model)
 store = VectorStore(embedder, cfg.vector_dir, cfg.docs_dir)
 set_docs_dir(cfg.docs_dir)
+memory = MemoryStore(cfg.vector_dir.parent / "memory")
 
 agent = None
 
@@ -34,7 +36,7 @@ agent = None
 def get_agent():
     global agent
     if agent is None:
-        agent = RAGAgent(cfg, store)
+        agent = RAGAgent(cfg, store, memory)
     return agent
 
 app = FastAPI(title="Personal Knowledge Base RAG", version="1.0.0")
@@ -56,6 +58,8 @@ class AskReq(BaseModel):
     question: str
     k: int = 4
     structured: bool = False  # 结构化输出（JSON schema）
+    session_id: str = "default"  # 会话 id：多轮对话记忆隔离
+    remember: bool = False  # 是否提炼长期记忆（额外一次 LLM 调用）
 
 
 class IndexReq(BaseModel):
@@ -73,8 +77,23 @@ def ask(req: AskReq):
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=503,
                             content={"error": "未配置 DEEPSEEK_API_KEY，请在 .env 中填写后重启服务"})
-    a = get_agent().answer(req.question, k=req.k, structured=req.structured)
-    return {"answer": a.text, "sources": a.sources, "used_tool": a.used_tool}
+    a = get_agent().answer(req.question, k=req.k, structured=req.structured,
+                           session_id=req.session_id, remember=req.remember)
+    return {"answer": a.text, "sources": a.sources, "used_tool": a.used_tool,
+            "memories_saved": a.memories_saved}
+
+
+@app.get("/memory")
+def memory_list():
+    """查看长期记忆。"""
+    return {"memories": memory.list_all()}
+
+
+@app.delete("/memory")
+def memory_clear():
+    """清空长期记忆。"""
+    memory.clear()
+    return {"status": "cleared"}
 
 
 @app.post("/index")

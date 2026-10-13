@@ -28,10 +28,11 @@
 ## 功能
 
 - **RAG 问答**：文档切分 → 向量化 → FAISS 检索 → 带引用回答
+- **记忆系统**：短期（多轮对话历史，按 session 隔离）+ 长期（LLM 提炼、跨会话召回，通用可复用模块）
 - **工具调用**：本地工具（列出文档 / 搜索文件），模型按需调用
 - **结构化输出**：JSON schema 模式（answer / sources / confidence）
 - **增量索引**：通过文件 mtime 变更检测，只重索引变更文件（降低重复索引率）
-- **REST 接口**：FastAPI 提供 `/ask` `/index` `/docs` `/health`
+- **REST 接口**：FastAPI 提供 `/ask` `/index` `/docs` `/health` `/memory`
 - **Web 前端**：零依赖静态聊天页面（浏览器打开 `http://127.0.0.1:8000/` 即可使用）
 - **部署**：Dockerfile + docker-compose 一键启动
 - **测试**：pytest 单元测试（离线可跑，不依赖 API key）+ GitHub Actions CI
@@ -125,9 +126,10 @@ EMBEDDING_API_KEY=sk-xxxxxxxx
 | 答案正确率 | 100%（5/5，deepseek-chat 实测） |
 | 增量索引 | 变更 1 个文件仅重嵌入 2 个 chunk（全量 4 个），重复索引率降低约 50% |
 | 工具调用 | 文档清单类问题实测触发 list_docs 工具（used_tool=true） |
+| 记忆系统 | 短期多轮指代正确；长期记忆跨会话召回实测通过（新会话记得用户偏好） |
 | 结构化输出 | JSON schema 模式实测可用（answer/sources/confidence） |
 | REST 接口 | /ask /index /docs /health 实测可用 |
-| 单元测试 | 8 passed（pytest，离线） |
+| 单元测试 | 13 passed（pytest，离线） |
 
 复现：`python -m src.eval --k 4 --with-llm`
 
