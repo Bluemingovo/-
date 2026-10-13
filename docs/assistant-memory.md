@@ -45,6 +45,12 @@ Transformer 情感分类课程设计（准确率约 90%）、校园活动运营�
 - 诚实原则：简历与项目内容必须真实可验证，不编造经历与数字
 - 简历中个人信息与日期（2026.04/2026.09 等）待用户核对
 
+## ⏸ 待续任务（下次会话从这里继续）
+
+- MCP Server：scripts/mcp_server.py 与 docs/mcp.md **已写好但未测试**（mcp 包 pip 安装未完成）
+- 继续步骤：① 完成 `pip install mcp` → ② 跑 `python -m scripts.mcp_server --test` 自检 → ③ 修 bug → ④ commit + push → ⑤ 把 MCP 写进简历项目描述与 llm-context.md
+- 用户当天要求暂停，明天继续
+
 ## 待办（用户侧）
 
 - 通读 src/ 代码；模拟面试 3 轮
