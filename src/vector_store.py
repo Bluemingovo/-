@@ -27,7 +27,37 @@ class VectorStore:
         self.vector_dir.mkdir(parents=True, exist_ok=True)
         self.docs_dir.mkdir(parents=True, exist_ok=True)
         self._manifest_path = vector_dir / MANIFEST
+        self._repo_chunks_path = vector_dir / "repo_chunks.json"
         self._index = None  # FAISS 实例
+
+    # ---- 外部仓库内容（如 scripts/ingest_github.py 导入的 GitHub 仓库） ----
+    def _load_repo_chunks(self) -> List[Document]:
+        if self._repo_chunks_path.exists():
+            try:
+                import json
+                items = json.loads(self._repo_chunks_path.read_text(encoding="utf-8"))
+                return [Document(page_content=it["page_content"], metadata=it["metadata"])
+                        for it in items]
+            except Exception:
+                return []
+        return []
+
+    def _save_repo_chunks(self, docs: List[Document]) -> None:
+        import json
+        items = [{"page_content": d.page_content, "metadata": d.metadata} for d in docs]
+        self._repo_chunks_path.write_text(
+            json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    def add_repo_documents(self, docs: List[Document]) -> int:
+        """把外部仓库文档并入索引并持久化；返回合并后的 repo 文档总数。"""
+        existing = self._load_repo_chunks()
+        seen = {d.metadata.get("source") for d in existing}
+        new = [d for d in docs if d.metadata.get("source") not in seen]
+        merged = existing + new
+        self._save_repo_chunks(merged)
+        # 重建索引：本地 docs + repo 文档（保证重启后仍可检索）
+        self._build_index(load_docs_from_dir(self.docs_dir) + merged)
+        return len(merged)
 
     # ---- 变更检测 ----
     def _load_manifest(self) -> Dict[str, float]:
@@ -105,7 +135,10 @@ class VectorStore:
             def embed_query(self, text):
                 return embedder.embed_query(text)
 
-        self._index = FAISS.from_documents(docs, _Emb())
+        # 本地文档 + 外部仓库文档（repo_chunks.json）合并建索引
+        repo_docs = self._load_repo_chunks()
+        merged_docs = docs + repo_docs
+        self._index = FAISS.from_documents(merged_docs, _Emb())
         self._index.save_local(str(self.vector_dir))
         self._save_manifest(self._current_files())
 

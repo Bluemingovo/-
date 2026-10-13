@@ -56,7 +56,7 @@ def home():
 
 class AskReq(BaseModel):
     question: str
-    k: int = 4
+    k: int = 6
     structured: bool = False  # 结构化输出（JSON schema）
     session_id: str = "default"  # 会话 id：多轮对话记忆隔离
     remember: bool = False  # 是否提炼长期记忆（额外一次 LLM 调用）

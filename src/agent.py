@@ -44,7 +44,7 @@ class RAGAgent:
         self.llm_with_tools = self.llm.bind_tools(ALL_TOOLS)
         self.memory = memory
 
-    def answer(self, question: str, k: int = 4, structured: bool = False,
+    def answer(self, question: str, k: int = 6, structured: bool = False,
                session_id: str = "default", remember: bool = False) -> Answer:
         # 0. 记忆：召回相关长期记忆 + 会话内历史
         memories, history = [], []
@@ -83,22 +83,28 @@ class RAGAgent:
         messages.append(HumanMessage(content=f"【检索到的资料】\n{context}\n\n【用户问题】\n{question}"))
         resp = self.llm_with_tools.invoke(messages)
 
-        # 4. 处理工具调用
-        if getattr(resp, "tool_calls", None):
+        # 4. 处理工具调用（最多 3 轮，保证每个 tool_call 都有 ToolMessage 响应）
+        used_tool = False
+        tool_map = {t.name: t for t in ALL_TOOLS}
+        for _round in range(3):
+            if not getattr(resp, "tool_calls", None):
+                break
+            used_tool = True
+            messages.append(resp)
             for tc in resp.tool_calls:
-                tool_map = {t.name: t for t in ALL_TOOLS}
                 t = tool_map.get(tc["name"])
                 if t is None:
-                    continue
-                result = t.invoke(tc["args"])
-                messages.append(resp)
+                    result = f"工具不存在：{tc['name']}"
+                else:
+                    try:
+                        result = t.invoke(tc["args"])
+                    except Exception as e:
+                        result = f"工具调用失败：{e}"
                 messages.append(ToolMessage(content=str(result), tool_call_id=tc["id"]))
-            final = self.llm.invoke(messages)
-            saved = self._post_turn(session_id, question, final.content, remember)
-            return Answer(text=final.content, sources=sources, used_tool=True, memories_saved=saved)
-
-        saved = self._post_turn(session_id, question, resp.content, remember)
-        return Answer(text=resp.content, sources=sources, used_tool=False, memories_saved=saved)
+            resp = self.llm.invoke(messages)
+        final_text = resp.content
+        saved = self._post_turn(session_id, question, final_text, remember)
+        return Answer(text=final_text, sources=sources, used_tool=used_tool, memories_saved=saved)
 
     def _post_turn(self, session_id: str, question: str, answer: str, remember: bool) -> int:
         """本轮结束：写短期历史；remember=True 时提炼长期记忆。"""
