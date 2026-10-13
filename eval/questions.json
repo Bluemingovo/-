@@ -1,0 +1,27 @@
+[
+  {
+    "question": "二分查找的时间复杂度是多少？",
+    "source": "数据结构与算法-学习笔记.md",
+    "gold_points": ["O(log n)"]
+  },
+  {
+    "question": "栈和队列分别遵循什么原则？",
+    "source": "数据结构与算法-学习笔记.md",
+    "gold_points": ["后进先出", "先进先出", "LIFO", "FIFO"]
+  },
+  {
+    "question": "归并排序的时间复杂度和稳定性如何？",
+    "source": "数据结构与算法-学习笔记.md",
+    "gold_points": ["O(n log n)", "稳定"]
+  },
+  {
+    "question": "Python 里 dict 的平均查找复杂度是多少？",
+    "source": "Python基础速查.md",
+    "gold_points": ["O(1)"]
+  },
+  {
+    "question": "Python 中如何用 with 安全地打开文件？",
+    "source": "Python基础速查.md",
+    "gold_points": ["with open", "encoding"]
+  }
+]
