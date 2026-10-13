@@ -92,6 +92,21 @@ EMBEDDING_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 EMBEDDING_API_KEY=sk-xxxxxxxx
 ```
 
+## 实测结果（DeepSeek API）
+
+| 指标 | 结果 |
+|---|---|
+| 检索命中率 Hit@4 | 100%（5 题评测集） |
+| 答案正确率 | 100%（5/5，deepseek-chat 实测） |
+| 增量索引 | 变更 1 个文件仅重嵌入 2 个 chunk（全量 4 个），重复索引率降低约 50% |
+| 工具调用 | 文档清单类问题实测触发 list_docs 工具（used_tool=true） |
+| REST 接口 | /ask /index /docs /health 实测可用 |
+
+复现：`python -m src.eval --k 4 --with-llm`
+
+> 说明：默认哈希嵌入用于离线可复现验证；正式使用建议接入真实 embedding
+> （如 DashScope text-embedding-v3），检索质量会更好。
+
 ## 评测口径
 
 - **检索命中率 Hit@k**：黄金来源文档是否出现在 top-k 检索结果中。
