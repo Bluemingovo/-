@@ -4,4 +4,6 @@ __pycache__/
 .env
 data/vector_store/
 data/vector_store/**
+data/memory/
 .DS_Store
+.pytest_cache/
