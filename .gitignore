@@ -7,3 +7,6 @@ data/vector_store/**
 data/memory/
 .DS_Store
 .pytest_cache/
+*.egg-info/
+dist/
+build/
