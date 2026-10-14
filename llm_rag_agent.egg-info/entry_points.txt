@@ -1,0 +1,2 @@
+[console_scripts]
+llm-rag-mcp = scripts.mcp_server:main

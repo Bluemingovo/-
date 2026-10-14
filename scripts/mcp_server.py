@@ -127,7 +127,8 @@ def ask_rag(question: str) -> str:
     return _ask_rag(question)
 
 
-if __name__ == "__main__":
+def main():
+    """命令行入口（pip 安装后可用 `llm-rag-mcp` 命令直接调用）。"""
     if "--test" in sys.argv:
         print("read_memory 长度:", len(_read_shared_memory()))
         print(_save_shared_memory("MCP测试", "MCP Server 功能自检"))
@@ -136,3 +137,7 @@ if __name__ == "__main__":
     else:
         import anyio
         anyio.run(server.run_stdio_async)
+
+
+if __name__ == "__main__":
+    main()

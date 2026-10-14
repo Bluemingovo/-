@@ -2,6 +2,22 @@
 
 一个**真实可运行**的 RAG（检索增强生成）+ 工具调用（Function Calling）+ REST API 项目，
 覆盖大模型应用开发的核心链路：**接口调用 → 检索增强 → 函数调用 → 结构化输出 → 服务化 → 部署 → 测试**。
+同时提供 **MCP 记忆中枢**：pip 可安装的跨 Agent 共享记忆插件。
+
+## 作为插件安装（任何 Agent 一行接入）
+
+```bash
+pip install git+https://github.com/Bluemingovo/Blueming-llm-rag-agent.git
+
+# 自检
+llm-rag-mcp --test
+
+# Agent 的 MCP 配置（Claude Desktop / Cursor / Cline / Coze 等）
+"memory-hub": { "command": "llm-rag-mcp" }
+```
+
+安装后任何支持 MCP 的 Agent 自动获得四个工具：
+`read_memory`（读共享记忆）/ `save_memory`（写记忆）/ `list_memories`（列记忆）/ `ask_rag`（RAG 问答）
 
 ## 架构
 

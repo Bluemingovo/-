@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-rag-agent"
+version = "1.0.0"
+description = "RAG 知识库问答系统与 MCP 记忆中枢 —— 跨 Agent 共享记忆插件（pip 可安装）"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "ZumingSheng", email = "zumingsheng@outlook.com"}]
+keywords = ["rag", "langchain", "mcp", "agent", "memory", "llm", "fastapi"]
+dependencies = [
+    "mcp>=2.0.0",
+    "langchain>=0.3.0",
+    "langchain-openai>=0.2.0",
+    "langchain-community>=0.3.0",
+    "langchain-text-splitters>=0.3.0",
+    "faiss-cpu>=1.8.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.8.0",
+    "pypdf>=5.0.0",
+    "openai>=1.50.0",
+]
+
+[project.scripts]
+# 安装后直接可用：
+#   llm-rag-mcp          启动 MCP 记忆中枢（stdio）
+#   llm-rag-mcp --test   功能自检
+llm-rag-mcp = "scripts.mcp_server:main"
+
+[tool.setuptools]
+packages = ["src", "scripts"]
+
+[tool.setuptools.package-data]
+scripts = []
+src = []
