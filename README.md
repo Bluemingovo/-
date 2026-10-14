@@ -122,11 +122,14 @@ EMBEDDING_API_KEY=sk-xxxxxxxx
 
 | 指标 | 结果 |
 |---|---|
-| 检索命中率 Hit@4 | 100%（5 题评测集） |
+| 检索命中率 Hit@4（纯向量） | 55%（20 题评测集） |
+| 检索命中率 Hit@4（**混合检索 BM25+向量 RRF**） | **100%（20 题），提升 45 个百分点** |
 | 答案正确率 | 100%（5/5，deepseek-chat 实测） |
 | 增量索引 | 变更 1 个文件仅重嵌入 2 个 chunk（全量 4 个），重复索引率降低约 50% |
 | 工具调用 | 文档清单类问题实测触发 list_docs 工具（used_tool=true） |
 | 记忆系统 | 短期多轮指代正确；长期记忆跨会话召回实测通过（新会话记得用户偏好） |
+
+三模式对比复现：`python -m scripts.eval_compare --k 4`
 | 结构化输出 | JSON schema 模式实测可用（answer/sources/confidence） |
 | REST 接口 | /ask /index /docs /health 实测可用 |
 | 单元测试 | 13 passed（pytest，离线） |

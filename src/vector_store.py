@@ -142,10 +142,42 @@ class VectorStore:
         self._index.save_local(str(self.vector_dir))
         self._save_manifest(self._current_files())
 
-    def retrieve(self, query: str, k: int = 4) -> List[Document]:
+    def retrieve(self, query: str, k: int = 6, mode: str = "vector") -> List[Document]:
+        """检索。mode: vector（纯向量）| hybrid（BM25+向量 RRF 融合）| hybrid_rerank（+重排）。"""
         if self._index is None:
             self._load_or_build()
-        return self._index.similarity_search(query, k=k)
+        if mode == "vector":
+            return self._index.similarity_search(query, k=k)
+
+        # 混合检索：需要全部文档文本建 BM25
+        docs = self._all_docs()
+        if not docs:
+            return self._index.similarity_search(query, k=k)
+        from .hybrid import BM25Index, hybrid_search
+        bm25 = BM25Index([d.page_content for d in docs])
+        vec_hits = self._index.similarity_search(query, k=max(20, k * 3))
+        vec_ids = [self._match_doc(d, docs) for d in vec_hits]
+        vec_ids = [i for i in vec_ids if i is not None]
+        fused = hybrid_search(bm25, vec_ids, query, top_k=max(k, 10))
+
+        if mode == "hybrid_rerank":
+            from .rerank import rerank
+            cands = [(i, docs[i].page_content[:500]) for i in fused[:min(15, len(fused))]]
+            fused = rerank(query, cands, top_k=k)
+        return [docs[i] for i in fused[:k] if 0 <= i < len(docs)]
+
+    def _all_docs(self) -> List[Document]:
+        """全部文档 = 本地 docs + 外部仓库文档（与建索引口径一致）。"""
+        return load_docs_from_dir(self.docs_dir) + self._load_repo_chunks()
+
+    @staticmethod
+    def _match_doc(doc: Document, docs: List[Document]):
+        """按 source + page_content 在列表中找到索引（用于向量结果映射）。"""
+        for i, d in enumerate(docs):
+            if (d.metadata.get("source") == doc.metadata.get("source")
+                    and d.page_content == doc.page_content):
+                return i
+        return None
 
     def _load_or_build(self):
         from langchain_community.vectorstores import FAISS

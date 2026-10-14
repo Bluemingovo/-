@@ -46,7 +46,8 @@ class RAGAgent:
         self.memory = memory
 
     def answer(self, question: str, k: int = 6, structured: bool = False,
-               session_id: str = "default", remember: bool = False) -> Answer:
+               session_id: str = "default", remember: bool = False,
+               mode: str = "hybrid") -> Answer:
         # 0. 记忆：召回相关长期记忆 + 会话内历史
         memories, history = [], []
         if self.memory:
@@ -56,8 +57,8 @@ class RAGAgent:
         if memories:
             sys_prompt += "\n\n【长期记忆（此前对话中记住的事实）】\n" + "\n".join(memories)
 
-        # 1. 检索
-        docs = self.store.retrieve(question, k=k)
+        # 1. 检索（默认混合检索：BM25+向量 RRF 融合，评测 55%→100%）
+        docs = self.store.retrieve(question, k=k, mode=mode)
         context = "\n\n".join(f"[{i+1}] {d.page_content}" for i, d in enumerate(docs))
         sources = sorted({d.metadata.get("source", "?").split("\\")[-1].split("/")[-1] for d in docs})
 
