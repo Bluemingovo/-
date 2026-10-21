@@ -59,6 +59,23 @@
 - **沙箱问题**：workspace-write 模式下 pwsh 进程启动即崩（0xC0000142），本会话用户已把策略切到 danger-full-access 才正常；修复后记得提醒切回
 - **Node v24.21.0、Python 3.12.14**（`~/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/python/python.exe`）
 
+## 交付记录
+
+- **2026-10-21 栖窠项目投资分析报告 PPT**：13 页 / 16:9 / 原生可编辑 / **无演讲备注**（用户明确"不要备注"）；成品在桌面 `栖窠项目投资分析报告.pptx`，工程在 `projects\qike_20261021`
+  - 主题：《上海市保租房项目优劣势分析——以栖窠项目为例》（课程"项目一"作业，源材料为三份微信 PDF）
+  - 竞品调研（联网，22 条可溯源事实）：微领地 2700–4500、泊寓·虹桥国展 38㎡ 3100–3800、魔方虹桥火车站（商水商电）、龙湖霞菲 6973 起；私人房源安居客口径徐泾北城一居 3300/二居 4300
+  - 待补数据（页面已标注"待现场调研"）：栖窠当前出租率/出房流速/客户来源、贝壳链家口径、竞品精确距离
+- **事实核验教训**：青浦区政府原文为「2024 年 9 月 26 日启动运营、开业约一个月入住率接近 15%」；研究子代理曾误写 12 月 26 日 / 85%，已按官方原文修正
+
+## ppt-master 实战要点（踩坑记录）
+
+- 原生表格/图表 marker：`<g data-pptx-replace-with="chart|table">` 必须同时有 `data-pptx-bounds` + `<metadata type="application/json">`，改完 fallback 要跑 `stamp_native_fallbacks.py <svg> --write`，否则最终门报 blocking
+- 图表 metadata 的 `axes` 角色名只接受 `value` / `category` 等，写 `y` 会报 unsupported role
+- metadata 里的 `title`/axis 文案必须在 fallback 里可见，否则报"only appear after --native-charts-and-tables"；用 `name` 命名对象即可
+- 文字超出 `data-pptx-bounds` 超过 5% 是 error（不是 warning）；CJK 16px 约 16.9px/字，估宽要留 5% 余量
+- 图标必须先 `icon_sync.py` 同步到项目 `icons/`，否则报 "Project-local icon not found"
+- 导出：`svg_to_pptx.py <project> --no-notes`
+
 ## 用户偏好与约定
 
 - 文件管理：简历只维护一份源 HTML + 投递 PDF（桌面\简历\），禁止副本；分岗位改三处打印独立 PDF
