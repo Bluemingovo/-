@@ -50,6 +50,15 @@
 - 可选扩展：ESP32 语音终端作答辩演示亮点（非必需，不强求）
 - 开题报告暂不写（用户明确"先不着急"），需要时再动
 
+## 环境与工具（2026-10-21 安装 ppt-master 时摸清）
+
+- **DSH 技能根（rank 顺序）**：`<项目根>/.dsh/skills`(100) → `<项目根>/.agents/skills`(200) → `Config.customSkillDirs`(300) → `<dshHome>/skills`(400) → `<agentsHome>/skills`(500)；项目根=含 .git 的最近祖先，否则用 cwd（本会话 cwd=default-workspace，无 .git）
+- **ppt-master 技能已装**：v6.7.2 位于 `C:\Users\zms\.dsh\skills\ppt-master`，自带 `.venv` 独立依赖环境；attribution_guard 已过；DSH 会话自动发现，用户可直接说"做个 PPT"
+- **代理**：Clash `http://127.0.0.1:7897`；curl/git/pip/npm **不自动走 Windows 系统代理**，必须显式 `--proxy` 或 `$env:HTTP_PROXY`。直连 GitHub ~10KB/s，走代理 ~630KB/s
+- **执行策略**：npm/npx 的 .ps1 被挡，用 `npm.cmd`/`npx.cmd`
+- **沙箱问题**：workspace-write 模式下 pwsh 进程启动即崩（0xC0000142），本会话用户已把策略切到 danger-full-access 才正常；修复后记得提醒切回
+- **Node v24.21.0、Python 3.12.14**（`~/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/python/python.exe`）
+
 ## 用户偏好与约定
 
 - 文件管理：简历只维护一份源 HTML + 投递 PDF（桌面\简历\），禁止副本；分岗位改三处打印独立 PDF
@@ -69,5 +78,6 @@
 
 ## 最近新事实（agent 回写）
 
+- 安装 ppt-master 技能 v6.7.2（2026-10-21）：AI 生成原生可编辑 PPTX，位置 `~/.dsh/skills/ppt-master`，独立 venv，守门脚本通过
 - 记忆导入：用户另一平台记忆文件合并（2026-10-21）：新增 Andy 商业外包项目、毕设 ESP32 选题、画像短板（四级/GPA）
 - MiniMax、博世中国已投递（2026-10-14）
