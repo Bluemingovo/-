@@ -34,7 +34,7 @@ Python 3.12 / LangChain / FAISS / FastAPI / DeepSeek(OpenAI 兼容) / MCP / Dock
 - src/eval.py         评测：Hit@k / 答案正确率 / 索引效率
 
 ### 实测数字（小样本，口径可复现）
-- 检索命中率 Hit@4 = 100%（5 题评测集）
+- 检索命中率 Hit@4 = 100%（混合检索，20 题评测集；纯向量 55% → 混合 100%，+45pp）
 - 答案正确率 100%（DeepSeek deepseek-chat 实测 5/5）
 - 增量索引：变更 1 文件仅重嵌 2 chunk（全量 4）→ 重复索引率 -50%
 - 单元测试 13 个全过（pytest 离线）；长期记忆跨会话召回实测通过
@@ -42,4 +42,4 @@ Python 3.12 / LangChain / FAISS / FastAPI / DeepSeek(OpenAI 兼容) / MCP / Dock
 
 ### 已知取舍
 - 哈希嵌入是离线占位实现，README 有 DashScope text-embedding-v3 接入方案
-- 评测集仅 5 题（小样本），正在扩容
+- 评测集 20 题（已从 5 题扩容完成，仍属小样本）

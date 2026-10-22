@@ -1,131 +1,152 @@
-# 基于 LangChain 的个人知识库问答系统
+# LLM RAG Agent — 带记忆的 RAG 问答系统与 MCP 插件
 
-一个**真实可运行**的 RAG（检索增强生成）+ 工具调用（Function Calling）+ REST API 项目，
-覆盖大模型应用开发的核心链路：**接口调用 → 检索增强 → 函数调用 → 结构化输出 → 服务化 → 部署 → 测试**。
-同时提供 **MCP 记忆中枢**：pip 可安装的跨 Agent 共享记忆插件。
+[![CI](https://github.com/Bluemingovo/Blueming-llm-rag-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Bluemingovo/Blueming-llm-rag-agent/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![MCP](https://img.shields.io/badge/MCP-Server-purple)
+![Tests](https://img.shields.io/badge/tests-13%20passed-brightgreen)
 
-## 作为插件安装（任何 Agent 一行接入）
+一个可运行、可安装、可复现的 **RAG 知识库问答系统**，包含检索增强、Agent 记忆与 MCP 插件分发。
+
+**核心结果：混合检索使 20 题评测集命中率从 55% 提升至 100%。**
+
+## 亮点
+
+| 能力 | 说明 | 可验证 |
+|---|---|---|
+| **混合检索** | 自研 BM25 + 向量检索 RRF 融合，解决关键词类问题漏检 | `scripts/eval_compare.py` 三模式对比 |
+| **Agent 记忆** | 短期多轮 + 长期跨会话召回 + LLM 自主记忆（save_memory 工具） | 跨会话召回实测 |
+| **MCP 插件** | 记忆中枢封装为 MCP Server，pip 安装后任何 Agent 接入 | 标准客户端端到端验证 |
+| **工程化** | FastAPI + Docker + pytest(13) + GitHub Actions CI | 一键复现 |
+
+## 快速开始（3 步）
+
+```bash
+# 1. 安装
+pip install -r requirements.txt
+cp .env.example .env          # 填入 DEEPSEEK_API_KEY
+
+# 2. 离线自检（不需要 API Key）
+python -m src.selfcheck
+
+# 3. 启动服务
+python -m uvicorn src.app:app --port 8000
+# 浏览器打开 http://127.0.0.1:8000 聊天；接口文档 http://127.0.0.1:8000/docs
+```
+
+## 作为 MCP 插件安装
 
 ```bash
 pip install git+https://github.com/Bluemingovo/Blueming-llm-rag-agent.git
+llm-rag-mcp --test    # 自检
+```
 
-# 自检
-llm-rag-mcp --test
+在任何支持 MCP 的 Agent（Claude Desktop / Cursor / Cline / Coze）配置：
 
-# Agent 的 MCP 配置（Claude Desktop / Cursor / Cline / Coze 等）
+```json
 "memory-hub": { "command": "llm-rag-mcp" }
 ```
 
-安装后任何支持 MCP 的 Agent 自动获得四个工具：
-`read_memory`（读共享记忆）/ `save_memory`（写记忆）/ `list_memories`（列记忆）/ `ask_rag`（RAG 问答）
+获得的工具：`read_memory` / `save_memory` / `list_memories` / `ask_rag`
 
 ## 架构
 
 ```
-                 ┌──────────────┐
- 浏览器(静态前端) │   FastAPI    │
-    GET /        │  /ask        │
-                 │  /index      │
-                 │  /docs       │
-                 └──────┬───────┘
-                        │
-        ┌───────────────┼────────────────┐
-        ▼               ▼                ▼
-   RAG 检索链       函数工具          结构化输出
-  文档切分→向量化   list_docs       response_format
-  →FAISS 检索      search_files     =json_object
-        │               ▲
-        └───────┬───────┘
-                ▼
-         DeepSeek (OpenAI 兼容 API)
-         deepseek-chat + tool_calls
+                ┌──────────────────┐
+ 浏览器 / Agent │     FastAPI      │
+  GET /         │ /ask /index /docs│
+                │ /health /memory  │
+                └────────┬─────────┘
+                         │
+      ┌──────────────────┼───────────────────┐
+      ▼                  ▼                   ▼
+ 混合检索          函数工具             记忆系统
+ BM25 + FAISS     list_docs            短期多轮
+ RRF 融合         search_files         长期召回
+      │                  │             自主写入
+      └────────┬─────────┴───────────────────┘
+               ▼
+      DeepSeek (OpenAI 兼容) — tool_calls
+               ▲
+               │ MCP (stdio)
+        Claude / Cursor / Cline
 ```
 
-## 功能
+## 功能清单
 
-- **RAG 问答**：文档切分 → 向量化 → FAISS 检索 → 带引用回答
-- **记忆系统**：短期（多轮对话历史，按 session 隔离）+ 长期（LLM 提炼、跨会话召回，通用可复用模块）
-- **工具调用**：本地工具（列出文档 / 搜索文件），模型按需调用
-- **结构化输出**：JSON schema 模式（answer / sources / confidence）
-- **增量索引**：通过文件 mtime 变更检测，只重索引变更文件（降低重复索引率）
-- **REST 接口**：FastAPI 提供 `/ask` `/index` `/docs` `/health` `/memory`
-- **Web 前端**：零依赖静态聊天页面（浏览器打开 `http://127.0.0.1:8000/` 即可使用）
-- **部署**：Dockerfile + docker-compose 一键启动
-- **测试**：pytest 单元测试（离线可跑，不依赖 API key）+ GitHub Actions CI
-- **评测**：检索命中率 Hit@k、答案正确率、索引效率对比
+- **RAG 问答**：文档切分 → 向量化 → FAISS 检索 → 带引用回答（自动标注来源）
+- **混合检索**：BM25 关键词 + 向量语义，RRF 倒数排名融合（命中率 55% → 100%）
+- **记忆系统**：短期（session 隔离多轮）+ 长期（LLM 提炼、跨会话召回）+ LLM 自主记忆（工具调用写入）
+- **MCP 记忆中枢**：四工具记忆服务，pip 可安装，跨 Agent 共享
+- **工具调用**：`list_docs` / `search_files`，模型按需调用（实测触发）
+- **结构化输出**：JSON Schema（answer / sources / confidence）
+- **增量索引**：文件 mtime 变更检测，只重索引变更文件（重复索引率 -50%）
+- **REST API**：`/ask` `/index` `/docs` `/health` `/memory` `/assistant-memory`
+- **Web 前端**：零依赖静态聊天页
+- **部署与测试**：Docker Compose、pytest（13 个）、GitHub Actions CI
+- **评测**：Hit@k、LLM-as-judge（faithfulness / answer_relevancy / context_precision）
 
 ## 目录结构
 
 ```
 llm-rag-agent/
 ├── src/
-│   ├── config.py         # 配置加载
-│   ├── embedding.py      # 哈希嵌入（可离线）+ 真实嵌入接口
-│   ├── embedding_openai.py
-│   ├── documents.py      # 文档加载/切分
-│   ├── vector_store.py   # FAISS + 增量索引/变更检测
-│   ├── tools.py          # 函数工具（list_docs / search_files）
-│   ├── llm.py            # DeepSeek(OpenAI兼容) LLM
-│   ├── agent.py          # RAG 主流程（检索+工具调用）
-│   ├── app.py            # FastAPI 服务
-│   ├── eval.py           # 评测脚本
-│   └── selfcheck.py      # 离线自检（无需 API）
-├── data/docs/            # 知识库文档
-├── eval/questions.json   # 评测集
-├── requirements.txt
+│   ├── config.py         配置加载
+│   ├── documents.py      文档加载/切分（损坏文件容错）
+│   ├── embedding.py      哈希嵌入（离线）+ OpenAI 兼容嵌入
+│   ├── vector_store.py   FAISS + 增量索引 + 三种检索模式
+│   ├── hybrid.py         BM25 自实现 + RRF 融合
+│   ├── rerank.py         重排模块（可插拔，无 key 自动退化）
+│   ├── memory.py         记忆模块（短期/长期/自主记忆）
+│   ├── tools.py          函数工具（含 save_memory）
+│   ├── agent.py          RAG 主流程
+│   ├── app.py            FastAPI 服务
+│   └── eval.py           评测脚本
+├── scripts/
+│   ├── mcp_server.py     MCP 记忆中枢
+│   ├── eval_compare.py   三模式检索对比
+│   ├── eval_ragas.py     LLM-as-judge 评测
+│   ├── ingest_github.py  GitHub 仓库入知识库
+│   ├── fetch_memory.py   记忆拉取
+│   └── save_memory.py    一行回写记忆
+├── tests/                pytest 用例（13 个）
+├── data/docs/            知识库文档
+├── eval/questions.json   20 题评测集
+├── Dockerfile / docker-compose.yml
+├── pyproject.toml        pip 打包配置
 └── .env.example
 ```
 
-## 快速开始
+## 实测结果
 
-### 1. 安装依赖
+| 指标 | 结果 |
+|---|---|
+| 检索命中率 Hit@4（纯向量） | **55%**（20 题评测集） |
+| 检索命中率 Hit@4（混合检索 BM25+RRF） | **100%**，提升 45 个百分点 |
+| 答案正确率 | 100%（5/5，deepseek-chat） |
+| faithfulness / answer_relevancy | 1.0 / 1.0（LLM-as-judge，5 题） |
+| 增量索引 | 变更 1 文件仅重嵌入 2 chunk（全量 4），重复索引率 -50% |
+| 单元测试 | 13 passed（离线） |
+| MCP 协议 | 标准客户端 stdio 端到端通过 |
 
-```bash
-python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
-
-pip install -r requirements.txt
-```
-
-### 2. 配置 API Key
-
-复制 `.env.example` 为 `.env`，填入 DeepSeek API Key（申请地址 https://platform.deepseek.com）：
-
-```
-DEEPSEEK_API_KEY=sk-xxxxxxxx
-```
-
-### 3. 离线自检（不需要 API Key）
+复现命令：
 
 ```bash
-python -m src.selfcheck
+python -m scripts.eval_compare --k 4    # 三模式对比
+python -m scripts.eval_ragas            # LLM-as-judge 评测
+python -m pytest tests -v               # 单元测试
 ```
 
-### 4. 建索引
+## Docker 部署
 
 ```bash
-python -m src.eval --k 4
-```
-
-### 5. 启动服务
-
-```bash
-uvicorn src.app:app --host 127.0.0.1 --port 8000
-```
-
-测试接口：
-
-```bash
-curl -X POST http://127.0.0.1:8000/ask -H "Content-Type: application/json" -d "{\"question\": \"二分查找的时间复杂度是多少？\"}"
+docker compose up --build
+# 打开 http://localhost:8000
 ```
 
 ## 接入真实 Embedding（推荐）
 
-默认哈希嵌入仅用于离线验证。正式评测建议换真实模型，例如阿里云 DashScope
-`text-embedding-v3`（OpenAI 兼容）。在 `.env` 中设置：
+默认哈希嵌入仅用于离线复现。正式使用建议换真实模型（阿里云 DashScope `text-embedding-v3`）：
 
 ```
 EMBEDDING_BACKEND=openai
@@ -134,54 +155,12 @@ EMBEDDING_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 EMBEDDING_API_KEY=sk-xxxxxxxx
 ```
 
-## 实测结果（DeepSeek API）
-
-| 指标 | 结果 |
-|---|---|
-| 检索命中率 Hit@4（纯向量） | 55%（20 题评测集） |
-| 检索命中率 Hit@4（**混合检索 BM25+向量 RRF**） | **100%（20 题），提升 45 个百分点** |
-| 答案正确率 | 100%（5/5，deepseek-chat 实测） |
-| 增量索引 | 变更 1 个文件仅重嵌入 2 个 chunk（全量 4 个），重复索引率降低约 50% |
-| 工具调用 | 文档清单类问题实测触发 list_docs 工具（used_tool=true） |
-| 记忆系统 | 短期多轮指代正确；长期记忆跨会话召回实测通过（新会话记得用户偏好） |
-
-三模式对比复现：`python -m scripts.eval_compare --k 4`
-| 结构化输出 | JSON schema 模式实测可用（answer/sources/confidence） |
-| REST 接口 | /ask /index /docs /health 实测可用 |
-| 单元测试 | 13 passed（pytest，离线） |
-
-复现：`python -m src.eval --k 4 --with-llm`
-
-## 测试与 CI
-
-```bash
-# 离线单元测试（无需 API key）
-python -m pytest tests -v
-
-# 离线自检
-python -m src.selfcheck
-```
-
-GitHub Actions 在每次 push 时自动运行 pytest（见 `.github/workflows/ci.yml`）。
-
-## Docker 部署
-
-```bash
-docker compose up --build
-# 浏览器打开 http://localhost:8000 使用聊天页面
-```
-
-> 说明：默认哈希嵌入用于离线可复现验证；正式使用建议接入真实 embedding
-> （如 DashScope text-embedding-v3），检索质量会更好。
-
-## 评测口径
-
-- **检索命中率 Hit@k**：黄金来源文档是否出现在 top-k 检索结果中。
-- **答案正确率**：LLM 回答是否包含黄金答案要点（`--with-llm`）。
-- **索引效率**：全量重索引 vs 增量索引的嵌入 chunk 数对比。
-
 ## 常见问题
 
-- **`ModuleNotFoundError: langchain_text_splitters`** → 单独 `pip install langchain-text-splitters`
-- **DeepSeek 报 401** → API Key 未填或失效，检查 `.env`
-- **检索结果不相关** → 换真实 embedding，或调整 `chunk_size`（`documents.py`）
+- `ModuleNotFoundError: langchain_text_splitters` → `pip install langchain-text-splitters`
+- DeepSeek 401 → 检查 `.env` 中的 API Key
+- 检索结果不相关 → 换真实 embedding，或调整 `chunk_size`（`documents.py`）
+
+## License
+
+MIT
