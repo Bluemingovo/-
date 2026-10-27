@@ -80,7 +80,7 @@
 ## 用户偏好与约定
 
 - 文件管理：简历只维护一份源 HTML + 投递 PDF（桌面\简历\），禁止副本；分岗位改三处打印独立 PDF
-- 进度面板：default-workspace\求职作战面板.md（唯一），每次会话有进展都要更新
+- 进度面板：D:\工作文件\求职作战面板.md（唯一），每次会话有进展都要更新
 - 助手记忆：本文件，每次会话结束更新
 - 沟通：中文；行动导向（直接帮他做，别只给建议）
 - 诚实原则：简历与项目内容真实可验证，不编造
@@ -102,3 +102,5 @@
 - 2026-10-21 完成 Human 3.0 人生规划访谈（13 轮）：报告 `default-workspace\人生战略报告-Human3.0-2026-10-21.md`（本地，敏感内容不入库）。结论：四象限 L1.5，瓶颈在「敢被看见/信任」而非技能；求职主线确认 **C 型（出方案 + 亲手落地 + 带小团队）**，岗位偏 AI 应用落地/解决方案
 - 通信工程课程设计报告（噪声检测）：2026-10-24 完成《基于C语言的噪声检测系统设计》课程设计报告：据开题报告重写桌面模板 .doc 全文（29页，正文22页+附录代码），保留原格式（A4/页边距/宋体小四/1.5倍行距/黑体标题/封面评分表/页眉），15处图片位留空（图2.1、3.1-3.5、4.1-4.5、5.1-5.4，每个图题上方留3行空白）。硬件口径：STM32F103RCT6(ALIENTEK Mini板)+声音传感器(AO→PA1)+0.96寸SSD1306 OLED(I2C PB6/PB7)+ESP8266-01S(USART2 PA2/PA3)+按键/LED/蜂鸣器；调试章按实物+手机APP联调写，无测试数据表。目录改为真Word TOC域（可F9更新），正文页码从1重排。原件备份 default-workspace\kt\template_original_backup.doc，成品备份 kt\final_report_成品备份.doc。（2026-10-24）
 - PDF转图片的可行办法（本机无LibreOffice）：课程设计报告需要把厂商原理图PDF转成图片插入Word。本机没有 LibreOffice/poppler/pymupdf。可行方案：PowerShell 5.1 调 WinRT 的 Windows.Data.Pdf API 渲染，脚本在 C:\Users\zms\Documents\deepseek-harness\default-workspace\kt\render_pdf.ps1，用法：powershell -ExecutionPolicy Bypass -File render_pdf.ps1 -Pdf a.pdf -Out a.png -Page 0 -Width 2400。不可行：①Word 打开PDF再CopyAsPicture→文字重叠错位；②Edge headless 对PDF截图是空白。注意：pwsh 7 读含中文的 .ps1 必须 Get-Content -Raw -Encoding utf8，否则中文变乱码；PowerShell 变量名大小写不敏感（\ 与 \ 会互相覆盖，踩过坑导致SaveAs把文档对象当文件名）。报告图3.3已用微雪官方0.96寸OLED原理图；图3.1/3.2/3.4/3.5仍留空由用户自己补。（2026-10-24）
+- **工作区迁移（2026-10-27）**：数据全部搬到 `D:\工作文件`（含 llm-rag-agent、毕设、projects、面板、人生规划报告）；`AGENTS.md` 已放到 D 根。旧 `C:\...\default-workspace` 只剩 `AGENTS.md`、`kt\`（课程设计素材，勿删）、`resume_text.txt`。DSH 的对话按工作区隔离存储（`~/.dsh/sessions/<编码路径>/<session-id>/session.v4.jsonl.zstd`），**对话不能跨工作区，文件可以**（绝对路径即可）。
+- **毕设设计（2026-10-22/27）**：`D:\工作文件\毕设\` 下两份——`00-毕设总体设计.md`（v1.1，含 3 个 RQ、架构、选型对比、5 组消融、30 人试点、7 章论文结构、进度倒排）、`01-技术强化备选.md`（14 项前沿技术对比 + 强化包 A–E + 三档组合）。导师确认**不需要硬件**（ESP32 已删）；待定：题目 A/B、学院开题中期答辩时间与模板、校内文档范围、是否有 GPU 做 Embedding 微调。
