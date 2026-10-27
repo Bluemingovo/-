@@ -27,7 +27,7 @@
 - 经历：LangChain RAG 开源项目（2026.10 起）；Transformer 情感分类（91.3%）；校园活动运营（AI 提效 40→25 分钟）
 - 硬件：外星人笔记本（曾电源轨报错维修，已恢复）
 - **短板（保密，简历不写）**：英语四级未过、GPA 2.7/4、无大厂实习经验——面试准备对应话术
-- **方向倾向**：用户另一平台记忆写"渴望切入 AI 产品经理/数字化创新/AI 战略落地"——与实际投递的开发岗存在分歧，需与用户确认主线方向
+- **方向倾向**：2026-10-27 已收敛为 **AI 应用开发**（主线）；"AI 产品经理/数字化创新"作为补充方向，不再是主线；加密量化降级为副业/兴趣
 
 ## 项目状态
 
@@ -104,3 +104,5 @@
 - PDF转图片的可行办法（本机无LibreOffice）：课程设计报告需要把厂商原理图PDF转成图片插入Word。本机没有 LibreOffice/poppler/pymupdf。可行方案：PowerShell 5.1 调 WinRT 的 Windows.Data.Pdf API 渲染，脚本在 C:\Users\zms\Documents\deepseek-harness\default-workspace\kt\render_pdf.ps1，用法：powershell -ExecutionPolicy Bypass -File render_pdf.ps1 -Pdf a.pdf -Out a.png -Page 0 -Width 2400。不可行：①Word 打开PDF再CopyAsPicture→文字重叠错位；②Edge headless 对PDF截图是空白。注意：pwsh 7 读含中文的 .ps1 必须 Get-Content -Raw -Encoding utf8，否则中文变乱码；PowerShell 变量名大小写不敏感（\ 与 \ 会互相覆盖，踩过坑导致SaveAs把文档对象当文件名）。报告图3.3已用微雪官方0.96寸OLED原理图；图3.1/3.2/3.4/3.5仍留空由用户自己补。（2026-10-24）
 - **工作区迁移（2026-10-27）**：数据全部搬到 `D:\工作文件`（含 llm-rag-agent、毕设、projects、面板、人生规划报告）；`AGENTS.md` 已放到 D 根。旧 `C:\...\default-workspace` 只剩 `AGENTS.md`、`kt\`（课程设计素材，勿删）、`resume_text.txt`。DSH 的对话按工作区隔离存储（`~/.dsh/sessions/<编码路径>/<session-id>/session.v4.jsonl.zstd`），**对话不能跨工作区，文件可以**（绝对路径即可）。
 - **毕设设计（2026-10-22/27）**：`D:\工作文件\毕设\` 下两份——`00-毕设总体设计.md`（v1.1，含 3 个 RQ、架构、选型对比、5 组消融、30 人试点、7 章论文结构、进度倒排）、`01-技术强化备选.md`（14 项前沿技术对比 + 强化包 A–E + 三档组合）。导师确认**不需要硬件**（ESP32 已删）；待定：题目 A/B、学院开题中期答辩时间与模板、校内文档范围、是否有 GPU 做 Embedding 微调。
+- **加密量化探索 + 方向收敛（2026-10-27，工作区 `D:\量化`）**：用户在独立工作区 `D:\量化` 系统探索加密量化（数据下载/双均线回测/参数扫描过拟合/滚动样本外/风控/波动率目标/多资产/纸面交易/策略体检清单）。结论：简单策略均跑不赢买入持有，不足以作为职业主线。**助手建议并获用户采纳：求职主线 = AI 应用开发；量化降级为副业/兴趣。**
+- **README 重写并推送（2026-10-27）**：`llm-rag-agent` README 由助手重写并 push（commit `63be1ab`）：新增「为什么做这个」「设计决策（5 个为什么）」「评测方法（含 20 题样本局限）」「局限与改进」；新增 `Dockerfile.hf` + `deploy-huggingface.md`（HuggingFace Spaces 部署）。已同步 GitHub；`D:\工作文件` 本地副本需 `git pull` 同步。
