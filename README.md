@@ -10,7 +10,7 @@
 >
 > **核心结果：混合检索使 20 题评测集命中率从 55% 提升至 100%。**
 
-🔗 **在线 Demo**：`TODO：部署后替换为 HuggingFace Spaces 链接`
+🔗 **在线 Demo**：[blueming-llm-rag-agent-3o6iwfctgh6tpqnqeykxrp.streamlit.app](https://blueming-llm-rag-agent-3o6iwfctgh6tpqnqeykxrp.streamlit.app/)
 
 ---
 
@@ -187,7 +187,7 @@ llm-rag-agent/
 |---|---|
 | 评测集只有 20 题 | 扩到 50~100 题，加置信区间 |
 | 默认哈希嵌入（离线用） | 生产切真实 embedding（DashScope `text-embedding-v3`） |
-| 没有线上 demo | **已部署 HuggingFace Spaces**（链接待填） |
+| 没有线上 demo | **已部署 Streamlit Cloud**（见顶部链接） |
 | 没有 baseline（纯 LLM 无 RAG） | 加一个“无检索”对照组 |
 | 单机内存存储 | 可换 Redis/Postgres |
 
