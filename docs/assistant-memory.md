@@ -104,3 +104,5 @@
 - **README 重写并推送（2026-10-27）**：`llm-rag-agent` README 由助手重写并 push（commit `63be1ab`）：新增「为什么做这个」「设计决策（5 个为什么）」「评测方法（含 20 题样本局限）」「局限与改进」；新增 `Dockerfile.hf` + `deploy-huggingface.md`（HuggingFace Spaces 部署）。已同步 GitHub；`D:\工作文件` 本地副本需 `git pull` 同步。
 - **Andy 商业外包项目已黄（2026-10-27 用户确认）**：不再跟进，待办移除「接口字段草案/数据清洗规则」；求职项目以 llm-rag-agent + 毕设为主。
 - **Streamlit Cloud 部署成功（2026-10-27）**：`llm-rag-agent` 已上线 Streamlit Community Cloud（免费，HuggingFace Docker Spaces 现需 PRO 故弃用）；新增 5 篇「求职知识库」文档（个人简历/项目详解/技能清单/面试准备/毕设）并 push（commit `70d3ddb`）；重启后应用已能回答个人背景问题。**在线 Demo 链接待用户提供后填入 README。**
+- **外文文献翻译交付（2026-10-31）**：按学院模板完成 `C:\Users\zms\Desktop\毕设\外文文献翻译-23151114祖名省.docx`（52 页：封面+译文27+原文25）。原文 Yang et al.《RAGVA: Engineering RAG-based Virtual Assistants in Practice》(JSS 2025, 112436)，全文摘要+1–9 章中译并附英文原文；图1–3 保留原图译注、表1–3 重建为原生表格中译并跨页重复表头；论文无公式。封面信息：人工智能学院/通信工程2023级1班/祖名省/23151114，指导教师留空。生成脚本在 `default-workspace\_work\fanyi\`。
+
